@@ -1,3 +1,8 @@
+"""
+Reads in iCal files on your computer and outputs calendar statistics such as
+average hours spent, minimum, maximum and total.  
+"""
+
 import os
 
 import reader, analyzer

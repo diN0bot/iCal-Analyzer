@@ -1,3 +1,11 @@
+"""
+Parses iCal files into Event, Calendar and Group data structures
+
+@todo:
+ * handle timezones
+ * handle multi-line summaries (add to summary as encounter more lines?)
+ * populate groups
+"""
 
 from classes import *
 
@@ -5,50 +13,64 @@ import os
 import re
 from datetime import datetime
 
+DEBUG = False
+
 class Reader(object):
-    calendar_uid_map = {}
-    event_uid_map = {}
-    group_uid_map = {}
-    
+    # set whenever a calender folder is encountered.
+    # used when reading event files to know which calendar they are for 
     current_calendar = None
     
     @classmethod
     def read_calendars(klass, calendars_dir):
+        """
+        @param calendars_dir: root directory of calendar fields. Usually ~/Library/Calendars
+        @return: dictionary {'events':[list of Events], 'calendars':[list of Calendars]}
+        """
         items = {'events':[], 'calendars':[]}
         os.path.walk( calendars_dir,
                       klass.callback,
                       items )
-        
-        print "OK< NOW PRINT events"
-        for e in items['events']:
-            print e
-        print len(items['events'])
-        for e in items['calendars']:
-            print e
-        
+        if DEBUG:
+            for e in items['events']:
+                print e
+            print len(items['events'])
+            for e in items['calendars']:
+                print e
+
         return items
 
 
     @classmethod
     def callback(klass, arg, dirname, fnames):
+        """
+        method called by os.path.walk on each directory
+        """
         for fname in fnames:
             full_fname = dirname + '/' + fname
-            print full_fname
+            if DEBUG: print full_fname
+        
             if os.path.isfile(full_fname) and fname[-4:] == ".ics":
+                # EVENT FILE
                 event = klass.read_event_file(full_fname)
-                print "  >>> EVENT ", event
+                if DEBUG: print "  >>> EVENT ", event
                 arg['events'].append(event)
+                
             elif dirname[-6:] == ".group" and fname == "Info.plist":
+                # GROUP FILE
                 pass
+            
             elif dirname[-9:] == ".calendar" and fname == "Info.plist":
+                # CALENDAR FILE
                 calendar = klass.read_calendar_file(full_fname)
                 klass.current_calendar = calendar
-                print "  >>> CALENDAR ", calendar
+                if DEBUG: print "  >>> CALENDAR ", calendar
                 arg['calendars'].append(calendar)
 
     @classmethod
     def read_calendar_file(klass, fname):
         """
+        Reads calendar info file, which looks like:
+        
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
@@ -73,6 +95,8 @@ class Reader(object):
             <string>Local</string>
         </dict>
         </plist>
+        
+        @return: Calendar or None if could not extract calendar name
         """
         f = open(fname, 'r')
         found_title_key = False
@@ -88,7 +112,7 @@ class Reader(object):
     @classmethod
     def read_event_file(klass, fname):
         """
-        DTSTART;TZID=Europe/Berlin:20090804T230000
+        Reads calendar info file, which looks like:
         
         BEGIN:VCALENDAR
         VERSION:2.0
@@ -103,9 +127,14 @@ class Reader(object):
         SUMMARY:TEST@
         CREATED:20090809T180331Z
         DTEND;TZID=US/Eastern:20090727T220000
+        (( or if traveling...
+        DTSTART;TZID=Europe/Berlin:20090804T230000
+        ))
         RRULE:FREQ=WEEKLY;INTERVAL=1
         END:VEVENT
         END:VCALENDAR
+        
+        @return: Event
         """
         # only record key values whose keys exist in this dictionary.
         # use these dictionary values as self field names
@@ -184,14 +213,13 @@ class Reader(object):
                         key_value = smart_split(sub_value, '=')
                         value[key_value[0].lower()] = key_value[1].lower()
                 # set event.key = value 
-                setattr(event, smart_name(key), value)
+                event.add_field(smart_name(key), value)
                 # set sub key  properties if necessary
                 if sub_keys:
                     for sub_key in sub_keys:
                         key_value = smart_split(sub_key, '=')
-                        setattr(event,
-                                "%s_%s" % (smart_name(key), smart_name(key_value[0])),
-                                key_value[1])
+                        event.add_field("%s_%s" % (smart_name(key), smart_name(key_value[0])),
+                                        key_value[1])
         f.close()
         if klass.current_calendar:
             event.assign_calendar(klass.current_calendar)

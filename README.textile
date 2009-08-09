@@ -1,0 +1,12 @@
+h1. iCal Analyzer
+
+Reads your computer's iCal files and outputscalendar statistics such as
+average hours spent, minimum, maximum and total. 
+
+h2. Run
+
+1. Checkout the files from the GitHub repository at http://github.com/diN0bot/iCal-Analyzer/tree/master
+bq.  git clone git://github.com/diN0bot/iCal-Analyzer.git
+
+2. Execute the main python script
+bq. python main.py
