@@ -2,9 +2,7 @@ h1. iCal Analyzer
 
 Reads in your computer's iCal files and outputs statistics such as average, min and max hours spent per calendar.
 
-I found this useful because I use a dozen iCal calendars to record how I spend my time. I wanted to quickly see
-whether I was putting in enough time to various projects, and how much exercise, socializing and time wasting
-I was doing, too. 
+I found this useful because I use a dozen iCal calendars to record how I spend my time. I wanted to quickly see whether I was putting in enough time to various projects, and how much exercise, socializing and time wasting I was doing, too. 
 
 I may add more features in the future. Feedback desirable: diN0bot@bilumi.org 
 
