@@ -100,12 +100,19 @@ class Reader(object):
         """
         f = open(fname, 'r')
         found_title_key = False
+        found_color_key = False
+        title = None
+        color = None
         for line in f.readlines():
-            if found_title_key:
+            if found_title_key and not title:
                 title = re.findall("<string>([^<]+)</string>", line)[0]
-                return Calendar(title)
+            if found_color_key and not color:
+                color = re.findall("<string>#([^<]+)</string>", line)[0]
             if line.strip() == "<key>Title</key>":
                 found_title_key = True
+            if line.strip() == "<key>Color</key>":
+                found_color_key = True
+        return Calendar(title, color)
         f.close()
         return None
 

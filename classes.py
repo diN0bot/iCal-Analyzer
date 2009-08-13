@@ -22,8 +22,9 @@ class Calendar(object):
     """
     Corresponds to iCal calendar
     """
-    def __init__(self, name):
+    def __init__(self, name, color):
         self.name = name
+        self.color = color
         self.group = None
         self.events = []
     
