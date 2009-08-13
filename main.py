@@ -1,6 +1,7 @@
 """
 Reads in iCal files on your computer and outputs calendar statistics such as
-average hours spent, minimum, maximum and total.  
+average hours spent, minimum, maximum and total.
+Will create a google chart image if pygooglechart is installed.
 """
 
 import os
@@ -14,4 +15,9 @@ if __name__ == "__main__":
     data = reader.Reader.read_calendars(CALENDARS_DIR)
     # analyze data
     analyzer.Analyzer.print_totals(data, type='by_calendar', timeframe='forever')
+    try:
+        import pygooglechart
+        analyzer.Analyzer.google_chart(data)
+    except:
+        print "\nPlease download pygooglechart to create charts\n    http://pygooglechart.slowchop.com/"
     

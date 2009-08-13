@@ -1,10 +1,8 @@
 h1. iCal Analyzer
 
-Reads in your computer's iCal files and outputs statistics such as average, min and max hours spent per calendar.
+Reads in computer's iCal files (*.ics, Info.plist, *.calendar and *.group). Currently, this requires running this script on a Mac. Files are assumed to be in ~/Library/Calendars.
 
-I found this useful because I use a dozen iCal calendars to record how I spend my time. I wanted to quickly see whether I was putting in enough time to various projects, and how much exercise, socializing and time wasting I was doing, too. 
-
-I may add more features in the future. Feedback desirable: diN0bot@bilumi.org 
+Outputs to console statistics such as average, min, max and total hours spent per calendar. Also creates a google chart image, 'chart.png'.
 
 h2. Run
 
@@ -15,3 +13,13 @@ bq.  git clone git://github.com/diN0bot/iCal-Analyzer.git
 2. Execute the main python script
 
 bq. python main.py
+
+3. Google graph creation depends on pygooglechart
+
+bq. http://pygooglechart.slowchop.com/
+
+h2. Motivation
+
+I found this useful because I use a dozen iCal calendars to record how I spend my time. I wanted to quickly see whether I was putting in enough time to various projects, and how much exercise, socializing and time wasting I was doing each day.
+
+I may add more features in the future. Feedback desirable: diN0bot@bilumi.org 

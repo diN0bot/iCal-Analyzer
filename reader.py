@@ -5,13 +5,15 @@ Parses iCal files into Event, Calendar and Group data structures
  * handle timezones
  * handle multi-line summaries (add to summary as encounter more lines?)
  * populate groups
+ * instead of splitting events that cross midnight, redefine each TimePeriod to
+   end with sleep rather than adhere to exact 24 hr day.
 """
 
 from classes import *
 
 import os
 import re
-from datetime import datetime
+import datetime
 
 DEBUG = False
 
@@ -51,9 +53,10 @@ class Reader(object):
         
             if os.path.isfile(full_fname) and fname[-4:] == ".ics":
                 # EVENT FILE
-                event = klass.read_event_file(full_fname)
-                if DEBUG: print "  >>> EVENT ", event
-                arg['events'].append(event)
+                events = klass.read_event_file(full_fname)
+                for event in events:
+                    if DEBUG: print "  >>> EVENT ", event
+                    arg['events'].append(event)
                 
             elif dirname[-6:] == ".group" and fname == "Info.plist":
                 # GROUP FILE
@@ -145,15 +148,71 @@ class Reader(object):
         """
         # only record key values whose keys exist in this dictionary.
         # use these dictionary values as self field names
+        def split_event_if_crosses_midnight(event):
+            """
+            Events that cross midnight become two events.
+            This is not what we want to do. We actually want to make days
+            that end with sleep, regardless of midnight.
+            """
+            ret = []
+            if event.end.day != event.start.day:
+                midnight_day1 = datetime.datetime(event.start.year,
+                                                  event.start.month,
+                                                  event.start.day,
+                                                  23, 59, 59)
+                midnight_day2 = datetime.datetime(event.end.year,
+                                                  event.end.month,
+                                                  event.end.day,
+                                                  0, 0, 0)
+                event2 = Event(start=midnight_day2,
+                               end=event.end,
+                               calendar=event.calendar,
+                               summary=event.summary)
+                event.end = midnight_day1
+                ret.append(event)
+                ret.append(event2)
+            else:
+                ret.append(event)
+            return ret
+        
+        def smart_split(item_to_split, splitch):
+            """
+            Splits a list into components based on the split character, 'splitch'
+            Each component is stripped. Components that look like dates become datetime.
+            """
+            items = item_to_split.split(splitch)
+            ret = []
+            for item in items:
+                item = item.strip()
+                try:
+                    #20090727T200000
+                    item = datetime.datetime.strptime(item, "%Y%m%dT%H%M%S")
+                except ValueError:
+                    pass
+                ret.append(item)
+            return ret
+        
+        def smart_name(name):
+            """
+            remaps name using file_key_value_map
+            """
+            if name in file_key_value_map:
+                return file_key_value_map[name]
+            else:
+                return name
+    
         file_key_value_map = {'SUMMARY':'summary',
                               'DTSTART':'start',
                               'DTEND':'end',
-                              'TZID':'tz'}
+                              'TZID':'tz',
+                              'BEGIN':'begin'}
 
         event = Event()
         f = open(fname, 'r')
         for line in f.readlines():
             """
+            NOTE: keys can exist multiple times in the file
+            
             every line should have this form:: 
                 <key>:<value>
             where key is an expression of this form::
@@ -171,25 +230,6 @@ class Reader(object):
             yeilds
                 self.rrule =  {'freq':'weekly', 'interval'=1}
             """
-            def smart_split(item_to_split, splitch):
-                items = item_to_split.split(splitch)
-                ret = []
-                for item in items:
-                    item = item.strip()
-                    try:
-                        #20090727T200000
-                        item = datetime.strptime(item, "%Y%m%dT%H%M%S")
-                    except ValueError:
-                        pass
-                    ret.append(item)
-                return ret
-            
-            def smart_name(name):
-                if name in file_key_value_map:
-                    return file_key_value_map[name]
-                else:
-                    return name
-            
             # parse the line
             key_value = smart_split(line, ':')
             if len(key_value) == 1:
@@ -228,6 +268,14 @@ class Reader(object):
                         event.add_field("%s_%s" % (smart_name(key), smart_name(key_value[0])),
                                         key_value[1])
         f.close()
+        type = event.get_field('begin', None)
+        if type and type != 'VEVENT':
+            return []
+        
+        events = split_event_if_crosses_midnight(event)
+        
         if klass.current_calendar:
-            event.assign_calendar(klass.current_calendar)
-        return event
+            for event in events:
+                event.assign_calendar(klass.current_calendar)
+        
+        return events
