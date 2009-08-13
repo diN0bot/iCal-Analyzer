@@ -4,6 +4,10 @@ Reads in computer's iCal files (*.ics, Info.plist, *.calendar and *.group). Curr
 
 Outputs to console statistics such as average, min, max and total hours spent per calendar. Also creates a google chart image, 'chart.png'.
 
+!chart.png!
+
+!http://github.com/diN0bot/iCal-Analyzer/raw/96a989ac5e5f9c2f5480596bcc68f7e213146145/chart.png!
+
 h2. Run
 
 1. Checkout the files from the GitHub repository at http://github.com/diN0bot/iCal-Analyzer/tree/master
