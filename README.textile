@@ -4,7 +4,11 @@ Reads in computer's iCal files (*.ics, Info.plist, *.calendar and *.group). Curr
 
 Outputs to console statistics such as average, min, max and total hours spent per calendar. Also creates a google chart image, 'chart.png'.
 
+---ding---
+
 !chart.png!
+
+---test---
 
 !http://github.com/diN0bot/iCal-Analyzer/raw/96a989ac5e5f9c2f5480596bcc68f7e213146145/chart.png!
 
@@ -21,6 +25,20 @@ bq. python main.py
 3. Google graph creation depends on pygooglechart
 
 bq. http://pygooglechart.slowchop.com/
+
+h2. Status
+
+Proof-of-concept
+
+ToDo
+ * instead of splitting events that cross midnight, redefine each TimePeriod to end with sleep rather than adhere to exact 24 hr day.
+ * generalize by reading feeds from gCal and exported iCal?
+ * more extensible graph with horizontal scrolling and zooming
+ * handle timezones
+ ** Right now I have events entered into iCal from different timezones as I traveled.  Events entered in Berlin actually changes times now that I'm back in Boston.
+ * handle multi-line summaries
+ ** Summaries are stored in multiple lines. Add to summary field as encounter more lines that start with double spaces before encountering next key.
+ * populate groups
 
 h2. Motivation
 
