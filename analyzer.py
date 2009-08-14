@@ -11,6 +11,51 @@ import pygooglechart
 class Analyzer(object):
     
     @classmethod
+    def cross_reference_times(klass, data):
+        for calendar in data['calendars']:
+            if calendar.name == 'sleep':
+                def sort_events(x, y):
+                    if x.start > y.start:
+                        return 1
+                    elif x.start == y.start:
+                        return 0
+                    else:
+                        return -1
+                ordered_events = sorted(calendar.events, sort_events)
+                prev_event = None
+                for event in ordered_events:
+                    if prev_event:
+                        TimePeriod.get_or_create(start=prev_event.end,
+                                                 end=event.start)
+                    prev_event = event
+        
+        for event in data['events']:
+            #if event.calendar.name != 'sleep':
+            tp = TimePeriod.get_containing_time_period(event.start)
+            if not tp:
+                print "no time period contains this event. if not a first day event, then this is a problem", event
+            else:
+                event.assign_timeperiod(tp)
+            
+    
+    
+        """
+        start_of_day = datetime.datetime(event.get_field('start').year,
+                                         event.get_field('start').month,
+                                         event.get_field('start').day,
+                                         0, 0, 0)
+        end_of_day = datetime.datetime(event.get_field('start').year,
+                                       event.get_field('start').month,
+                                       event.get_field('start').day,
+                                       23, 59, 59)
+        time_period = TimePeriod.get_or_create(start_of_day, end_of_day)
+        time_period.add_event(event)
+        if not time_period in self.events_by_time_period:
+            self.events_by_time_period[time_period] = []
+        self.events_by_time_period[time_period].append(event)
+        """
+    
+    @classmethod
     def print_totals(klass, data, type='by_calendar', timeframe='forever'):
         """
         Iterates over each Calendar and prints to console:
@@ -35,7 +80,7 @@ class Analyzer(object):
             min = 999999
             max = 0
             for event in calendar.events:
-                duration = event.duration()
+                duration = event.duration
                 sum += duration
                 if duration < min:
                     min = duration
@@ -71,20 +116,20 @@ class Analyzer(object):
             for tp,events in calendar.ordered_time_periods():
                 sum = 0
                 for event in events:
-                    sum += event.duration()
+                    sum += event.duration
                 line.append(sum/3600)
             lines.append(line)
         
-        #max_y = 0
+        max_y = 0
         y_labels = []
         for (start, tp) in TimePeriod.get_ordered_periods():
             y_labels.append(start.strftime("%a"))#"%s/%s" % (start.month, start.day))
-            #tp_sum = 0
-            #for event in tp.events:
-            #    tp_sum += event.duration()
-            #if tp_sum/3600 > max_y:
-            #    max_y = tp_sum/3600
-        max_y = 24
+            tp_sum = 0
+            for event in tp.events:
+                tp_sum += event.duration
+            if tp_sum/3600 > max_y:
+                max_y = tp_sum/3600
+        #max_y = 24
 
         chart = pygooglechart.StackedVerticalBarChart(1000,
                                                       300,

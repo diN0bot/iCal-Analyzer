@@ -53,8 +53,8 @@ class Reader(object):
         
             if os.path.isfile(full_fname) and fname[-4:] == ".ics":
                 # EVENT FILE
-                events = klass.read_event_file(full_fname)
-                for event in events:
+                event = klass.read_event_file(full_fname)
+                if event:
                     if DEBUG: print "  >>> EVENT ", event
                     arg['events'].append(event)
                 
@@ -207,7 +207,11 @@ class Reader(object):
                               'TZID':'tz',
                               'BEGIN':'begin'}
 
-        event = Event()
+        event_fields = {'start':None,
+                        'end':None,
+                        'calendar':None,
+                        'summary':None,
+                        'begin':None}
         f = open(fname, 'r')
         for line in f.readlines():
             """
@@ -259,23 +263,23 @@ class Reader(object):
                     for sub_value in sub_values:
                         key_value = smart_split(sub_value, '=')
                         value[key_value[0].lower()] = key_value[1].lower()
-                # set event.key = value 
-                event.add_field(smart_name(key), value)
+                event_fields[smart_name(key)] = value
                 # set sub key  properties if necessary
                 if sub_keys:
                     for sub_key in sub_keys:
                         key_value = smart_split(sub_key, '=')
-                        event.add_field("%s_%s" % (smart_name(key), smart_name(key_value[0])),
-                                        key_value[1])
+                        event_fields["%s_%s" % (smart_name(key),
+                                                smart_name(key_value[0]))] = key_value[1]
         f.close()
-        type = event.get_field('begin', None)
-        if type and type != 'VEVENT':
-            return []
+        if event_fields['begin'] != 'VEVENT':
+            return None
         
-        events = split_event_if_crosses_midnight(event)
+        #events = split_event_if_crosses_midnight(event)
         
-        if klass.current_calendar:
-            for event in events:
-                event.assign_calendar(klass.current_calendar)
+        if not klass.current_calendar:
+            print "NO CALENDAR ERROR"
         
-        return events
+        return Event(event_fields['start'],
+                     event_fields['end'],
+                     event_fields['summary'],
+                     klass.current_calendar)

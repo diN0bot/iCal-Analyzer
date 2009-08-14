@@ -8,6 +8,8 @@ Outputs to console statistics such as average, min, max and total hours spent pe
 
 h2. Run
 
+0. Create some iCal calendars. Be sure to have a "sleep" calendar that records when you are asleep.
+
 1. Checkout the files from the GitHub repository at http://github.com/diN0bot/iCal-Analyzer/tree/master
 
 bq.  git clone git://github.com/diN0bot/iCal-Analyzer.git
@@ -20,19 +22,22 @@ bq. python main.py
 
 bq. http://pygooglechart.slowchop.com/
 
+h2. Features
+
+* Defines a "day" as the time between waking up. This is better than a rigid 24 hr day because it shows all events before the "cycle" refreshes. Waking up, doing some work, and then going back to sleep will create a small "day", but this is interesting, too. 
+
 h2. Status
 
 Proof-of-concept
 
 ToDo
- * instead of splitting events that cross midnight, redefine each TimePeriod to end with sleep rather than adhere to exact 24 hr day.
- * generalize by reading feeds from gCal and exported iCal?
- * more extensible graph with horizontal scrolling and zooming
- * handle timezones
- ** Right now I have events entered into iCal from different timezones as I traveled.  Events entered in Berlin actually changes times now that I'm back in Boston.
- * handle multi-line summaries
- ** Summaries are stored in multiple lines. Add to summary field as encounter more lines that start with double spaces before encountering next key.
- * populate groups
+* generalize by reading feeds from gCal and exported iCal?
+* more extensible graph with horizontal scrolling and zooming
+* handle timezones
+** Right now I have events entered into iCal from different timezones as I traveled.  Events entered in Berlin actually changes times now that I'm back in Boston.
+* handle multi-line summaries
+** Summaries are stored in multiple lines. Add to summary field as encounter more lines that start with double spaces before encountering next key.
+* populate groups
 
 h2. Motivation
 

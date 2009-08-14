@@ -47,20 +47,11 @@ class Calendar(object):
         
     def add_event(self, event):
         """
-        called by Event.assign_calendar()
-        cross references event with a time period
+        called by Event initializer
         """
         self.events.append(event)
-        start_of_day = datetime.datetime(event.get_field('start').year,
-                                         event.get_field('start').month,
-                                         event.get_field('start').day,
-                                         0, 0, 0)
-        end_of_day = datetime.datetime(event.get_field('start').year,
-                                       event.get_field('start').month,
-                                       event.get_field('start').day,
-                                       23, 59, 59)
-        time_period = TimePeriod.get_or_create(start_of_day, end_of_day)
-        time_period.add_event(event)
+    
+    def add_event_with_time_period(self, event, time_period):
         if not time_period in self.events_by_time_period:
             self.events_by_time_period[time_period] = []
         self.events_by_time_period[time_period].append(event)
@@ -81,7 +72,8 @@ class Event(object):
     
     @todo: handle re-occurring events
     """
-    def __init__(self, start=None, end=None, summary=None, calendar=None):
+    
+    def __init__(self, start, end, summary, calendar):
         """
         Instance fields are added using self.add_field().
         Expected fields are:
@@ -92,34 +84,27 @@ class Event(object):
         self.start = start
         self.end = end
         self.summary = summary
-        self.calendar = None
-        if calendar:
-            self.assign_calendar(calendar)
-    
-    def add_field(self, name, value):
-        setattr(self, name, value)
-        
-    def get_field(self, name, default=None):
-        return getattr(self, name, default)
-        
-    def assign_calendar(self, calendar):
-        """
-        calls Calendar.add_event()
-        """
         self.calendar = calendar
-        calendar.add_event(self)
-    
-    def duration(self):
-        """
-        returns duration of event
-        """
-        if self.get_field('end') and self.get_field('start'):
-            return (self.get_field('end') - self.get_field('start')).seconds
+        if self.calendar:
+            calendar.add_event(self)
+        self.time_period = None
+        
+        if self.end and self.start:
+            self.duration = (self.end - self.start).seconds
         else:
-            return 0
+            self.duration = 0
+        
+    #def __cmp__(self, x):
+    #    return self.start < x.start
+        
+    def assign_timeperiod(self, time_period):
+        self.time_period = time_period
+        self.time_period.add_event(self)
+        if self.calendar:
+            self.calendar.add_event_with_time_period(self, time_period)
 
     def __str__(self):
-        return "%s hours, %s" % (self.duration() / 3600, self.__dict__)
+        return "%s hrs (%s --- %s) %s" % (self.duration / 3600, self.start, self.end, self.calendar)
 
 class TimePeriod(object):
     
@@ -128,25 +113,19 @@ class TimePeriod(object):
     All_Periods = {}
     
     @classmethod
+    def get_containing_time_period(klass, start):
+        for s in klass.All_Periods:
+            tp = klass.All_Periods[s]
+            if start >= tp.start and start <= tp.end:
+                return tp
+        return None
+    
+    @classmethod
     def get_or_create(klass, start, end):
         if not start in klass.All_Periods:
             tp = TimePeriod(start, end)
             klass.All_Periods[start] = tp
         return klass.All_Periods[start]
-        
-        """
-            for tp in klass.All_Periods[start]:
-                print "----- end ------", end
-                if end == tp.end:
-                    return tp
-                print "   make new one   !"
-            tp = TimePeriod(start, end)
-            klass.All_Periods[start].append(tp)
-            return tp
-        tp = TimePeriod(start, end)
-        klass.All_Periods[start] = [tp]
-        return tp
-        """
 
     @classmethod
     def get_ordered_periods(klass):
@@ -165,4 +144,4 @@ class TimePeriod(object):
         self.events.append(event)
 
     def __str__(self):
-        return "%s - %s" % (self.start, self.end)
+        return "%s --- %s" % (self.start, self.end)
