@@ -3,6 +3,8 @@ Compute and print calendar statistics.
 """
 
 from __future__ import division
+from math import ceil
+import datetime
 
 from classes import TimePeriod
 
@@ -14,20 +16,27 @@ class Analyzer(object):
     def cross_reference_times(klass, data):
         for calendar in data['calendars']:
             if calendar.name == 'sleep':
-                def sort_events(x, y):
-                    if x.start > y.start:
-                        return 1
-                    elif x.start == y.start:
-                        return 0
-                    else:
-                        return -1
-                ordered_events = sorted(calendar.events, sort_events)
+                ordered_events = sorted(calendar.events)
                 prev_event = None
                 for event in ordered_events:
                     if prev_event:
                         TimePeriod.get_or_create(start=prev_event.end,
-                                                 end=event.start)
+                                                 end=event.end)
+                    else:
+                        # first sleep
+                        earlier = datetime.datetime(event.start.year,
+                                                    event.start.month,
+                                                    event.start.day-1)
+                        TimePeriod.get_or_create(start=earlier,
+                                                 end=event.end)
                     prev_event = event
+                    if event == ordered_events[-1]:
+                        # last sleep
+                        later = datetime.datetime(event.end.year,
+                                                  event.end.month,
+                                                  event.end.day+1)
+                        TimePeriod.get_or_create(start=event.end,
+                                                 end=later)
         
         for event in data['events']:
             #if event.calendar.name != 'sleep':
@@ -109,7 +118,7 @@ class Analyzer(object):
         colors = []
         names = []
         lines = []
-        for calendar in data['calendars']:
+        for calendar in sorted(data['calendars']):
             colors.append(calendar.color)
             names.append(calendar.name)
             line = []
@@ -119,17 +128,19 @@ class Analyzer(object):
                     sum += event.duration
                 line.append(sum/3600)
             lines.append(line)
+        #names.reverse()
+        #colors.reverse()
         
         max_y = 0
         y_labels = []
         for (start, tp) in TimePeriod.get_ordered_periods():
-            y_labels.append(start.strftime("%a"))#"%s/%s" % (start.month, start.day))
+            y_labels.append(start.strftime("%a %d"))#"%s/%s" % (start.month, start.day))
             tp_sum = 0
             for event in tp.events:
                 tp_sum += event.duration
             if tp_sum/3600 > max_y:
                 max_y = tp_sum/3600
-        #max_y = 24
+        max_y = ceil(max_y)
 
         chart = pygooglechart.StackedVerticalBarChart(1000,
                                                       300,
@@ -144,11 +155,33 @@ class Analyzer(object):
         
         # Last value is the lowest in the Y axis.
         #chart.add_data([0] * 2)
-        
+          
+        def factor(n):
+            """
+            from: http://blog.dhananjaynene.com/2009/01/2009-is-not-a-prime-number-a-python-program-to-compute-factors/ 
+            Get the factors for a number 
+            Not optimised for tail recursion 
+            """  
+            if n == 1: return [1]  
+            i = 2  
+            limit = n**0.5  
+            while i <= limit:  
+                if n % i == 0:  
+                    ret = factor(n/i)  
+                    ret.append(i)  
+                    return ret  
+                i += 1  
+            return [n] 
         # Some axis data
+        
         t = ['']
-        tt = 6
-        for i in range(tt):
+        factors = factor(max_y)
+        if factors:
+            tt = factors[0]
+        else:
+            tt = max_y
+        print tt
+        for i in range(int(tt)):
             t.append(max_y/tt*(i+1))
         chart.set_axis_labels(pygooglechart.Axis.LEFT, t)
         chart.set_axis_labels(pygooglechart.Axis.BOTTOM, y_labels)

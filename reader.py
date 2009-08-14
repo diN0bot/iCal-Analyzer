@@ -18,7 +18,7 @@ import datetime
 DEBUG = False
 
 class Reader(object):
-    # set whenever a calender folder is encountered.
+    # set whenever a calender folder is encountered and thus a calendar is created
     # used when reading event files to know which calendar they are for 
     current_calendar = None
     
@@ -213,6 +213,7 @@ class Reader(object):
                         'summary':None,
                         'begin':None}
         f = open(fname, 'r')
+        last_key_is_summary = False
         for line in f.readlines():
             """
             NOTE: keys can exist multiple times in the file
@@ -235,6 +236,9 @@ class Reader(object):
                 self.rrule =  {'freq':'weekly', 'interval'=1}
             """
             # parse the line
+            if line.startswith(' ') and last_key_is_summary:
+                event_fields['summary'] += line.strip()
+                continue
             key_value = smart_split(line, ':')
             if len(key_value) == 1:
                 print "skipping line because ':' not found", key_value
@@ -270,11 +274,17 @@ class Reader(object):
                         key_value = smart_split(sub_key, '=')
                         event_fields["%s_%s" % (smart_name(key),
                                                 smart_name(key_value[0]))] = key_value[1]
+                last_key_is_summary = (key == 'SUMMARY')
         f.close()
         if event_fields['begin'] != 'VEVENT':
             return None
         
         #events = split_event_if_crosses_midnight(event)
+        
+        if 'start_tz' in event_fields and event_fields['start_tz'] == 'Europe/Berlin':
+            event_fields['start'] = event_fields['start'] - datetime.timedelta(hours=6)
+        if 'end_tz' in event_fields and event_fields['end_tz'] == 'Europe/Berlin':
+            event_fields['end'] = event_fields['end'] - datetime.timedelta(hours=6)
         
         if not klass.current_calendar:
             print "NO CALENDAR ERROR"

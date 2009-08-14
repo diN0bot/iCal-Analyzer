@@ -32,12 +32,14 @@ Proof-of-concept
 
 ToDo
 * generalize by reading feeds from gCal and exported iCal?
-* more extensible graph with horizontal scrolling and zooming
-* handle timezones
-** Right now I have events entered into iCal from different timezones as I traveled.  Events entered in Berlin actually changes times now that I'm back in Boston.
-* handle multi-line summaries
-** Summaries are stored in multiple lines. Add to summary field as encounter more lines that start with double spaces before encountering next key.
-* populate groups
+* port to javascript or processing to get more extensible graph with horizontal scrolling and zooming, event summary mouse overs, etc
+* populate groups (useful for grouping calendars in chart)
+* handle timezones -(hardcoded for berlin)-
+* -handle multi-line summaries-
+
+h2. Known Problems
+
+* The google chart legend is inflexibly in reverse order to the stacking of bars in the chart
 
 h2. Motivation
 

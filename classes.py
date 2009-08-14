@@ -65,6 +65,16 @@ class Calendar(object):
 
     def __str__(self):
         return "%s (%s)" % (self.name, len(self.events))
+    
+    def __cmp__(self, calendar):
+        if self.name == "sleep":
+            return -1
+        if self.name > calendar.name:
+            return 1
+        elif self.name == calendar.name:
+            return 0
+        else:
+            return -1
 
 class Event(object):
     """
@@ -105,6 +115,14 @@ class Event(object):
 
     def __str__(self):
         return "%s hrs (%s --- %s) %s" % (self.duration / 3600, self.start, self.end, self.calendar)
+    
+    def __cmp__(self, event):
+        if self.start > event.start:
+            return 1
+        elif self.start == event.start:
+            return 0
+        else:
+            return -1
 
 class TimePeriod(object):
     
