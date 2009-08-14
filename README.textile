@@ -4,7 +4,7 @@ Reads in computer's iCal files (*.ics, Info.plist, *.calendar and *.group). Curr
 
 Outputs to console statistics such as average, min, max and total hours spent per calendar. Also creates a google chart image, 'chart.png'.
 
-!http://github.com/diN0bot/iCal-Analyzer/raw/ae16ae1128dea2e10eb3ad953d2dc6ed69d50ae1/chart.png!
+!http://github.com/diN0bot/iCal-Analyzer/raw/54d16d8770cb95b8676c5a39534d28863810d723/chart.png!
 
 h2. Run
 
@@ -34,7 +34,7 @@ ToDo
 * generalize by reading feeds from gCal and exported iCal?
 * port to javascript or processing to get more extensible graph with horizontal scrolling and zooming, event summary mouse overs, etc
 * populate groups (useful for grouping calendars in chart)
-* handle timezones -(hardcoded for berlin)-
+* handle timezones -hardcoded for berlin-
 * -handle multi-line summaries-
 
 h2. Known Problems
