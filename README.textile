@@ -6,11 +6,11 @@ Outputs to console statistics such as average, min, max and total hours spent pe
 
 Turns iCal calendars like this:
 
-!{width=50%}http://github.com/diN0bot/iCal-Analyzer/raw/fb53643a9a6f5f39042d28216a3039b7a225e1a1/calendar.jpg!
+!http://github.com/diN0bot/iCal-Analyzer/raw/fb53643a9a6f5f39042d28216a3039b7a225e1a1/calendar.jpg{width=50%}!
 
 Into stacked bar charts like this:
 
-!{width=80%}http://github.com/diN0bot/iCal-Analyzer/raw/54d16d8770cb95b8676c5a39534d28863810d723/chart.png!
+!{width:80%;}http://github.com/diN0bot/iCal-Analyzer/raw/54d16d8770cb95b8676c5a39534d28863810d723/chart.png!
 
 h2. Run
 
