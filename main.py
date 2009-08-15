@@ -19,8 +19,8 @@ if __name__ == "__main__":
     analyzer.Analyzer.cross_reference_times(data)
     # analyze data
     analyzer.Analyzer.print_totals(data, type='by_calendar', timeframe='forever')
-    try:
-        import pygooglechart
-        analyzer.Analyzer.google_chart(data)
-    except:
-        print "\nPlease download pygooglechart to create charts\n    http://pygooglechart.slowchop.com/"
+    #try:
+    import pygooglechart
+    analyzer.Analyzer.google_chart(data)
+    ##except:
+     #   print "\nPlease download pygooglechart to create charts\n    http://pygooglechart.slowchop.com/"
